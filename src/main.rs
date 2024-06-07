@@ -2,12 +2,13 @@ use clap::Parser;
 
 use cli::Cli;
 
-pub mod yf;
+fn main() -> anyhow::Result<()> {
+	let cli = Cli::parse();
+	cli::run(&cli)
+}
 
-pub mod core;
 mod cli;
 
-fn main() -> anyhow::Result<()> {
-	let mut app = Cli::parse();
-	app.run()
-}
+pub mod core;
+pub mod data;
+pub mod yf;

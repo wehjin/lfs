@@ -112,8 +112,10 @@ mod paths {
 		const EXTENSION: &str = "debug";
 		#[cfg(not(debug_assertions))]
 		const EXTENSION: &str = "release";
-		dirs::data_dir().expect("data_dir").join("lfs_data").join(EXTENSION)
+		dirs::data_dir().expect("data_dir").join(format!("{}_data", PKG_NAME)).join(EXTENSION)
 	}
+
+	const PKG_NAME: &str = env!("CARGO_PKG_NAME");
 
 	pub fn main_stash_json() -> io::Result<PathBuf> {
 		Ok(data_dir()?.join("main_stash.json"))

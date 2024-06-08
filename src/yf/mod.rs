@@ -1,4 +1,6 @@
+use std::collections::HashMap;
 use std::ops::Index;
+use std::str::FromStr;
 
 use easy_scraper::Pattern;
 use serde::{Deserialize, Serialize};
@@ -49,6 +51,14 @@ impl PriceList {
 
 	pub fn iter(&self) -> impl Iterator<Item=&MarketPrice> {
 		self.0.iter()
+	}
+	pub fn to_map(&self) -> HashMap<AssetSymbol, MarketPrice> {
+		let mut map = HashMap::new();
+		for price in &self.0 {
+			let symbol = AssetSymbol::from_str(price.symbol.as_str()).expect("valid symbol");
+			map.insert(symbol, price.clone());
+		}
+		map
 	}
 }
 

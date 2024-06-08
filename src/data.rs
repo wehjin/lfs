@@ -1,11 +1,14 @@
 use std::{fs, io};
-use std::collections::BTreeMap;
+use std::collections::{BTreeMap, HashMap};
 use std::io::ErrorKind;
 use std::str::FromStr;
 use std::string::ParseError;
 
 use chrono::{DateTime, Utc};
 use serde::{Deserialize, Serialize};
+
+use crate::core::AssetSymbol;
+use crate::yf::MarketPrice;
 
 pub fn write_stash(stash: &Stash) -> io::Result<()> {
 	let json = serde_json::to_string_pretty(stash)?;
@@ -43,6 +46,18 @@ impl Stash {
 		self.lots.insert(next_id, lot);
 		self.max_lot_id = next_id;
 	}
+	pub fn assets(&self) -> Vec<AssetSymbol> {
+		let mut assets = self.lots.iter().map(|(_, lot)| lot.asset.clone()).collect::<Vec<_>>();
+		assets.dedup();
+		assets
+	}
+	pub fn value(&self, price_map: &HashMap<AssetSymbol, MarketPrice>) -> f64 {
+		let mut value: f64 = 0.0;
+		for lot in self.lots.values() {
+			value += lot.value(&price_map);
+		}
+		value
+	}
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
@@ -53,24 +68,19 @@ pub struct Lot {
 	pub host: AssetHost,
 }
 
+impl Lot {
+	pub fn value(&self, price_map: &HashMap<AssetSymbol, MarketPrice>) -> f64 {
+		let price_level = price_map[&self.asset].level;
+		self.size * price_level
+	}
+}
+
 #[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct Basis {
 	pub cost: f64,
 	pub count: f64,
 	pub time: DateTime<Utc>,
 	pub host: AssetHost,
-}
-
-#[derive(Debug, Clone, Serialize, Deserialize)]
-pub struct AssetSymbol(String);
-
-impl FromStr for AssetSymbol {
-	type Err = ParseError;
-
-	fn from_str(s: &str) -> Result<Self, Self::Err> {
-		let symbol = Self(s.to_uppercase());
-		Ok(symbol)
-	}
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize)]

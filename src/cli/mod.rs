@@ -1,14 +1,13 @@
-use clap::{Args, Parser, Subcommand};
+use clap::{Parser, Subcommand};
+
+use lots::LotsArgs;
+
+use crate::cli::market::MarketArgs;
+use crate::data::read_stash;
+use crate::yf::fetch_prices;
 
 pub mod market;
 pub mod lots;
-
-pub fn run(cli: &Cli) -> anyhow::Result<()> {
-	match &cli.command {
-		Command::Market(args) => market::run(args),
-		Command::Lots(args) => lots::run(args),
-	}
-}
 
 #[derive(Debug, Parser)]
 #[command(version, about, long_about = None)]
@@ -21,29 +20,22 @@ pub struct Cli {
 pub enum Command {
 	Market(MarketArgs),
 	Lots(LotsArgs),
+	Cap,
 }
 
-#[derive(Debug, Args)]
-pub struct MarketArgs {
-	#[clap(value_delimiter = ',', required = true)]
-	symbols: Vec<String>,
+pub fn run(cli: &Cli) -> anyhow::Result<()> {
+	match &cli.command {
+		Command::Market(args) => market::run(args),
+		Command::Lots(args) => lots::run(args),
+		Command::Cap => print_cap(),
+	}
 }
 
-#[derive(Debug, Args)]
-pub struct LotsArgs {
-	#[clap(subcommand)]
-	pub command: Option<LotCommand>,
-}
-
-#[derive(Debug, Subcommand)]
-pub enum LotCommand {
-	Add(AddLotArgs),
-}
-
-#[derive(Debug, Args)]
-pub struct AddLotArgs {
-	symbol: String,
-	size: f64,
-	cost: f64,
-	host: String,
+fn print_cap() -> anyhow::Result<()> {
+	let stash = read_stash()?;
+	let assets = stash.assets();
+	let market_prices = fetch_prices(assets.as_slice())?.to_map();
+	let cap = stash.value(&market_prices);
+	println!("{} USD", cap);
+	Ok(())
 }

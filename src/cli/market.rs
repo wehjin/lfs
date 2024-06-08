@@ -1,6 +1,13 @@
-use crate::cli::MarketArgs;
+use clap::Args;
+
 use crate::core::AssetSymbol;
 use crate::yf;
+
+#[derive(Debug, Args)]
+pub struct MarketArgs {
+	#[clap(value_delimiter = ',', required = true)]
+	symbols: Vec<String>,
+}
 
 pub fn run(args: &MarketArgs) -> anyhow::Result<()> {
 	let symbols = parse_symbols(args)?;

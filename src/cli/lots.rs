@@ -1,4 +1,4 @@
-use crate::cli::{AddLotArgs, LotCommand, LotsArgs};
+use clap::{Args, Subcommand};
 use crate::data::{read_stash, write_stash};
 
 pub fn run(args: &LotsArgs) -> anyhow::Result<()> {
@@ -25,4 +25,23 @@ fn run_add_lots(args: &AddLotArgs) -> anyhow::Result<()> {
 	write_stash(&stash)?;
 	println!("{} lots", stash.lots.len());
 	Ok(())
+}
+
+#[derive(Debug, Args)]
+pub struct LotsArgs {
+	#[clap(subcommand)]
+	pub command: Option<LotCommand>,
+}
+
+#[derive(Debug, Subcommand)]
+pub enum LotCommand {
+	Add(AddLotArgs),
+}
+
+#[derive(Debug, Args)]
+pub struct AddLotArgs {
+	symbol: String,
+	size: f64,
+	cost: f64,
+	host: String,
 }

@@ -1,10 +1,15 @@
 use std::fmt::{Display, Formatter};
 use std::str::FromStr;
+use std::string::ParseError;
 
-#[derive(Debug, Clone)]
+use serde::{Deserialize, Serialize};
+
+#[derive(Debug, Clone, Serialize, Deserialize, Hash, Ord, PartialOrd, Eq, PartialEq)]
 pub struct AssetSymbol(String);
 
-pub type SymbolParseError = anyhow::Error;
+impl AssetSymbol {
+	pub fn as_str(&self) -> &str { &self.0 }
+}
 
 impl Display for AssetSymbol {
 	fn fmt(&self, f: &mut Formatter<'_>) -> std::fmt::Result {
@@ -13,11 +18,11 @@ impl Display for AssetSymbol {
 }
 
 impl FromStr for AssetSymbol {
-	type Err = SymbolParseError;
+	type Err = ParseError;
 
 	fn from_str(s: &str) -> Result<Self, Self::Err> {
-		let upper = s.to_uppercase();
-		Ok(AssetSymbol(upper))
+		let symbol = Self(s.to_uppercase());
+		Ok(symbol)
 	}
 }
 

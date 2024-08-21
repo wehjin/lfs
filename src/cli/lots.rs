@@ -47,7 +47,9 @@ pub fn run(args: &LotsArgs) -> anyhow::Result<()> {
 
 fn view_lots(asset_filter: AssetFilter, host_filter: HostFilter) -> anyhow::Result<()> {
 	let stash = read_stash()?;
-	for (id, lot) in stash.to_lots(&asset_filter, &host_filter) {
+	let mut lots = stash.to_lots(&asset_filter, &host_filter);
+	lots.sort_by(|&(_, a), &(_, b)| a.asset.cmp(&b.asset));
+	for (id, lot) in lots {
 		print_lot(id, lot);
 	}
 	Ok(())

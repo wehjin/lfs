@@ -1,14 +1,14 @@
-use std::{fs, io};
 use std::collections::{BTreeMap, HashMap};
 use std::io::ErrorKind;
 use std::str::FromStr;
 use std::string::ParseError;
+use std::{fs, io};
 
-use chrono::{DateTime, Utc};
-use serde::{Deserialize, Serialize};
-
+use crate::core::AssetFilter;
 use crate::core::AssetSymbol;
 use crate::yf::MarketPrice;
+use chrono::{DateTime, Utc};
+use serde::{Deserialize, Serialize};
 
 pub fn write_stash(stash: &Stash) -> io::Result<()> {
 	let json = serde_json::to_string_pretty(stash)?;
@@ -58,6 +58,14 @@ impl Stash {
 		}
 		value
 	}
+	pub fn to_lots(&self, asset_filter: &AssetFilter) -> Vec<(u64, &Lot)> {
+		let mut out = Vec::new();
+		let filter = self.lots.iter().filter(|&(_id, lot)| asset_filter.pass(&lot.asset));
+		for (id, lot) in filter {
+			out.push((*id, lot));
+		}
+		out
+	}
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
@@ -102,9 +110,9 @@ impl Default for AssetHost {
 }
 
 mod paths {
-	use std::{fs, io};
 	use std::io::ErrorKind;
 	use std::path::PathBuf;
+	use std::{fs, io};
 
 	pub fn data_dir() -> io::Result<PathBuf> {
 		let path = base_dir();

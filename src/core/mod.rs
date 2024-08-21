@@ -26,3 +26,25 @@ impl FromStr for AssetSymbol {
 	}
 }
 
+pub enum AssetFilter {
+	None,
+	One(AssetSymbol),
+}
+
+impl AssetFilter {
+	pub fn new(value: &Option<String>) -> Self {
+		match value {
+			Some(s) if !s.is_empty() => {
+				let asset_symbol = AssetSymbol::from_str(s).unwrap();
+				Self::One(asset_symbol)
+			}
+			_ => Self::None
+		}
+	}
+	pub fn pass(&self, value: &AssetSymbol) -> bool {
+		match self {
+			AssetFilter::None => true,
+			AssetFilter::One(filter) => filter == value,
+		}
+	}
+}

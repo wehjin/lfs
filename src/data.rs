@@ -34,6 +34,9 @@ pub struct Stash {
 }
 
 impl Stash {
+	pub fn remove_lot(&mut self, id: u64) -> Option<Lot> {
+		self.lots.remove(&id)
+	}
 	pub fn add_lot(&mut self, asset: AssetSymbol, size: f64, cost: f64, host: AssetHost) {
 		let basis = Basis {
 			cost,

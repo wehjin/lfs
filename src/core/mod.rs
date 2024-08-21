@@ -2,6 +2,7 @@ use std::fmt::{Display, Formatter};
 use std::str::FromStr;
 use std::string::ParseError;
 
+use crate::data::AssetHost;
 use serde::{Deserialize, Serialize};
 
 #[derive(Debug, Clone, Serialize, Deserialize, Hash, Ord, PartialOrd, Eq, PartialEq)]
@@ -23,6 +24,29 @@ impl FromStr for AssetSymbol {
 	fn from_str(s: &str) -> Result<Self, Self::Err> {
 		let symbol = Self(s.to_uppercase());
 		Ok(symbol)
+	}
+}
+
+pub enum HostFilter {
+	None,
+	One(AssetHost),
+}
+
+impl HostFilter {
+	pub fn new(value: &Option<String>) -> Self {
+		match value {
+			Some(s) => {
+				let asset_host = AssetHost::from_str(s).unwrap();
+				Self::One(asset_host)
+			}
+			None => Self::None,
+		}
+	}
+	pub fn pass(&self, value: &AssetHost) -> bool {
+		match self {
+			HostFilter::None => true,
+			HostFilter::One(s) => s == value,
+		}
 	}
 }
 

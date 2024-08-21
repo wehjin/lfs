@@ -4,8 +4,8 @@ use std::str::FromStr;
 use std::string::ParseError;
 use std::{fs, io};
 
-use crate::core::AssetFilter;
 use crate::core::AssetSymbol;
+use crate::core::{AssetFilter, HostFilter};
 use crate::yf::MarketPrice;
 use chrono::{DateTime, Utc};
 use serde::{Deserialize, Serialize};
@@ -58,9 +58,11 @@ impl Stash {
 		}
 		value
 	}
-	pub fn to_lots(&self, asset_filter: &AssetFilter) -> Vec<(u64, &Lot)> {
+	pub fn to_lots(&self, asset_filter: &AssetFilter, host_filter: &HostFilter) -> Vec<(u64, &Lot)> {
 		let mut out = Vec::new();
-		let filter = self.lots.iter().filter(|&(_id, lot)| asset_filter.pass(&lot.asset));
+		let filter = self.lots.iter().filter(|&(_id, lot)| {
+			asset_filter.pass(&lot.asset) && host_filter.pass(&lot.host)
+		});
 		for (id, lot) in filter {
 			out.push((*id, lot));
 		}
@@ -91,7 +93,7 @@ pub struct Basis {
 	pub host: AssetHost,
 }
 
-#[derive(Debug, Clone, Serialize, Deserialize)]
+#[derive(Debug, Clone, Serialize, Deserialize, Eq, PartialEq, )]
 pub struct AssetHost(String);
 
 impl FromStr for AssetHost {

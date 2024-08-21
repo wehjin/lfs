@@ -1,4 +1,4 @@
-use crate::core::AssetFilter;
+use crate::core::{AssetFilter, HostFilter};
 use crate::data::{read_stash, write_stash};
 use clap::{Args, Subcommand};
 
@@ -6,6 +6,8 @@ use clap::{Args, Subcommand};
 pub struct LotsArgs {
 	#[clap(short, long, help = "Filter by asset")]
 	pub asset: Option<String>,
+	#[clap(short = 'c', long, help = "Filter by host")]
+	pub host: Option<String>,
 	#[clap(subcommand)]
 	pub command: Option<LotCommand>,
 }
@@ -25,18 +27,19 @@ pub struct AddLotArgs {
 
 pub fn run(args: &LotsArgs) -> anyhow::Result<()> {
 	let asset_filter = AssetFilter::new(&args.asset);
+	let host_filter = HostFilter::new(&args.host);
 	if let Some(command) = &args.command {
 		match command {
 			LotCommand::Add(args) => add_lots(args),
 		}
 	} else {
-		view_lots(asset_filter)
+		view_lots(asset_filter, host_filter)
 	}
 }
 
-fn view_lots(asset_filter: AssetFilter) -> anyhow::Result<()> {
+fn view_lots(asset_filter: AssetFilter, host_filter: HostFilter) -> anyhow::Result<()> {
 	let stash = read_stash()?;
-	for (id, lot) in stash.to_lots(&asset_filter) {
+	for (id, lot) in stash.to_lots(&asset_filter, &host_filter) {
 		println!("{}: {}", id, serde_json::to_string(lot).unwrap());
 	}
 	Ok(())

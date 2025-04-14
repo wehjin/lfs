@@ -21,7 +21,7 @@ pub enum SeparationStyle {
     Char(char),
 }
 
-fn format_f64(f: f64, round_style: RoundStyle, separation_style: SeparationStyle) -> String {
+pub fn format_f64(f: f64, round_style: RoundStyle, separation_style: SeparationStyle) -> String {
     let rounded: String;
     match round_style {
         RoundStyle::Floor => {

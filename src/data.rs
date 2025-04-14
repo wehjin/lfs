@@ -1,14 +1,13 @@
-use std::collections::{BTreeMap, HashMap};
-use std::io::ErrorKind;
-use std::str::FromStr;
-use std::string::ParseError;
-use std::{fs, io};
-
 use crate::core::AssetSymbol;
 use crate::core::{AssetFilter, HostFilter};
 use crate::yf::MarketPrice;
 use chrono::{DateTime, Utc};
 use serde::{Deserialize, Serialize};
+use std::collections::{BTreeMap, HashMap};
+use std::io::ErrorKind;
+use std::str::FromStr;
+use std::string::ParseError;
+use std::{fs, io};
 
 pub fn write_stash(stash: &Stash) -> io::Result<()> {
     let json = serde_json::to_string_pretty(stash)?;
@@ -116,6 +115,12 @@ pub struct Basis {
 
 #[derive(Debug, Clone, Serialize, Deserialize, Eq, PartialEq)]
 pub struct AssetHost(String);
+
+impl AssetHost {
+    pub fn as_str(&self) -> &str {
+        &self.0
+    }
+}
 
 impl FromStr for AssetHost {
     type Err = ParseError;

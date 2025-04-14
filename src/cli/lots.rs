@@ -112,7 +112,7 @@ fn view_lots(
     lots.sort_by(|&(_, a), &(_, b)| a.asset.cmp(&b.asset));
 
     print_divider();
-    println!("| {:12} | {:12} | {:12} |", "shares", "asset", "custodian");
+    println!("| {:12} | {:12} | {:12} |", "shares", "asset", "host");
     print_divider();
     for (_id, lot) in lots {
         println!(

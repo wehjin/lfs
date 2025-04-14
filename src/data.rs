@@ -1,3 +1,4 @@
+use crate::cli::lots::PositiveShareCount;
 use crate::core::AssetSymbol;
 use crate::core::{AssetFilter, HostFilter};
 use crate::yf::MarketPrice;
@@ -37,6 +38,9 @@ impl Stash {
     pub fn remove_lot(&mut self, id: u64) -> Option<Lot> {
         self.lots.remove(&id)
     }
+    pub fn insert_lot(&mut self, id: u64, lot: Lot) {
+        self.lots.insert(id, lot);
+    }
     pub fn add_lot(&mut self, asset: AssetSymbol, size: f64, cost: f64, host: AssetHost) {
         let basis = Basis {
             cost,
@@ -74,12 +78,16 @@ impl Stash {
         &self,
         asset_filter: &AssetFilter,
         host_filter: &HostFilter,
+        size_filter: &Option<PositiveShareCount>,
     ) -> Vec<(u64, &Lot)> {
         let mut out = Vec::new();
-        let filter = self
-            .lots
-            .iter()
-            .filter(|&(_id, lot)| asset_filter.pass(&lot.asset) && host_filter.pass(&lot.host));
+        let filter = self.lots.iter().filter(|&(_id, lot)| {
+            let pass_size = match size_filter {
+                None => true,
+                Some(share_count) => share_count.matches_f64(lot.size),
+            };
+            asset_filter.pass(&lot.asset) && host_filter.pass(&lot.host) && pass_size
+        });
         for (id, lot) in filter {
             out.push((*id, lot));
         }
